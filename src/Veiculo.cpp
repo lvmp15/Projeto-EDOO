@@ -3,7 +3,9 @@
 #include <stdexcept>
 #include <cctype>
 
-Veiculo::Veiculo(const std::string& placa, const std::string& modelo,
+using namespace std;
+
+Veiculo::Veiculo(const string& placa, const string& modelo,
                  int clienteId, int id)
 {
     // passa pelos setters para nao repetir a validacao aq
@@ -27,38 +29,38 @@ void Veiculo::setId(int id)
     this->id = id;
 }
 
-std::string Veiculo::getPlaca() const
+string Veiculo::getPlaca() const
 {
     return placa;
 }
 
-void Veiculo::setPlaca(const std::string& placa)
+void Veiculo::setPlaca(const string& placa)
 {
-    std::string limpa;
+    string limpa;
 
     for (unsigned int i = 0; i < placa.length(); i++)
     {
         char c = placa[i];
         if (c != '-' && c != ' ')
         {
-            limpa += (char) std::toupper(c);
+            limpa += (char) toupper(c);
         }
     }
 
     if (!formatoValido(limpa))
     {
-        throw std::invalid_argument("Placa invalida: " + placa);
+        throw invalid_argument("Placa invalida: " + placa);
     }
 
     this->placa = limpa;
 }
 
-std::string Veiculo::getModelo() const
+string Veiculo::getModelo() const
 {
     return modelo;
 }
 
-void Veiculo::setModelo(const std::string& modelo)
+void Veiculo::setModelo(const string& modelo)
 {
     this->modelo = modelo;
 }
@@ -72,13 +74,13 @@ void Veiculo::setClienteId(int clienteId)
 {
     if (clienteId <= 0)
     {
-        throw std::invalid_argument("Id de cliente invalido");
+        throw invalid_argument("Id de cliente invalido");
     }
 
     this->clienteId = clienteId;
 }
 
-bool Veiculo::formatoValido(const std::string& placa) const
+bool Veiculo::formatoValido(const string& placa) const
 {
     if (placa.length() != 7)
     {
@@ -88,25 +90,25 @@ bool Veiculo::formatoValido(const std::string& placa) const
     // nos dois formatos as tres primeiras posicoes sao letras e a quarta e digito
     for (int i = 0; i < 3; i++)
     {
-        if (!std::isalpha(placa[i]))
+        if (!isalpha(placa[i]))
         {
             return false;
         }
     }
 
-    if (!std::isdigit(placa[3]))
+    if (!isdigit(placa[3]))
     {
         return false;
     }
 
     // formato antigo ABC1234
-    if (std::isdigit(placa[4]) && std::isdigit(placa[5]) && std::isdigit(placa[6]))
+    if (isdigit(placa[4]) && isdigit(placa[5]) && isdigit(placa[6]))
     {
         return true;
     }
 
     // formato Mercosul ABC1D23
-    if (std::isalpha(placa[4]) && std::isdigit(placa[5]) && std::isdigit(placa[6]))
+    if (isalpha(placa[4]) && isdigit(placa[5]) && isdigit(placa[6]))
     {
         return true;
     }
@@ -114,7 +116,7 @@ bool Veiculo::formatoValido(const std::string& placa) const
     return false;
 }
 
-void Veiculo::exibir(std::ostream& saida) const
+void Veiculo::exibir(ostream& saida) const
 {
     saida << "Id: " << id
           << " | Tipo: " << getTipo()
@@ -123,7 +125,7 @@ void Veiculo::exibir(std::ostream& saida) const
           << " | Cliente: " << clienteId;
 }
 
-std::ostream& operator<<(std::ostream& saida, const Veiculo& veiculo)
+ostream& operator<<(ostream& saida, const Veiculo& veiculo)
 {
     veiculo.exibir(saida);
     return saida;

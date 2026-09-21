@@ -4,18 +4,20 @@
 #include <string>
 #include <iostream>
 
+using namespace std;
+
 class Veiculo
 {
 private:
     int id;
-    std::string placa;
-    std::string modelo;
+    string placa;
+    string modelo;
     int clienteId;
 
-    bool formatoValido(const std::string& placa) const;
+    bool formatoValido(const string& placa) const;
 
 public:
-    Veiculo(const std::string& placa, const std::string& modelo,
+    Veiculo(const string& placa, const string& modelo,
             int clienteId, int id = 0);
 
     // virtual pq os veiculos sao apagados por um ponteiro Veiculo*
@@ -24,21 +26,21 @@ public:
     int getId() const;
     void setId(int id);
 
-    std::string getPlaca() const;
-    void setPlaca(const std::string& placa);
+    string getPlaca() const;
+    void setPlaca(const string& placa);
 
-    std::string getModelo() const;
-    void setModelo(const std::string& modelo);
+    string getModelo() const;
+    void setModelo(const string& modelo);
 
     int getClienteId() const;
     void setClienteId(int clienteId);
 
     virtual double calcularTarifa(double horas) const = 0;
-    virtual std::string getTipo() const = 0;
+    virtual string getTipo() const = 0;
 
-    virtual void exibir(std::ostream& saida) const;
+    virtual void exibir(ostream& saida) const;
 };
 
-std::ostream& operator<<(std::ostream& saida, const Veiculo& veiculo);
+ostream& operator<<(ostream& saida, const Veiculo& veiculo);
 
 #endif
