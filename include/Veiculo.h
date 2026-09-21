@@ -18,7 +18,7 @@ public:
     Veiculo(const std::string& placa, const std::string& modelo,
             int clienteId, int id = 0);
 
-    // virtual porque os veiculos sao apagados por um ponteiro Veiculo*
+    // virtual pq os veiculos sao apagados por um ponteiro Veiculo*
     virtual ~Veiculo();
 
     int getId() const;

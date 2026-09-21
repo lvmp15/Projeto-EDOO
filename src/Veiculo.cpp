@@ -6,7 +6,7 @@
 Veiculo::Veiculo(const std::string& placa, const std::string& modelo,
                  int clienteId, int id)
 {
-    // passa pelos setters para nao repetir a validacao aqui
+    // passa pelos setters para nao repetir a validacao aq
     setPlaca(placa);
     setModelo(modelo);
     setClienteId(clienteId);
