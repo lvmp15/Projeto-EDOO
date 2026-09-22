@@ -16,7 +16,14 @@ Veiculo::Veiculo(const string& placa, const string& modelo,
 }
 
 Veiculo::~Veiculo()
-{
+{}
+
+double Veiculo::calcularComTolerancia(double horas, double taxaFixa, double taxaHora, double tolerancia) const{
+    if (horas <= tolerancia){
+        return taxaFixa;
+    }
+
+    return taxaFixa + (horas - tolerancia) * taxaHora;
 }
 
 int Veiculo::getId() const

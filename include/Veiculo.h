@@ -6,8 +6,11 @@
 
 using namespace std;
 
-class Veiculo
-{
+class Veiculo{
+    
+protected:
+    double calcularComTolerancia(double horas, double taxaFixa, double taxaHora, double tolerancia = 1.0) const;
+
 private:
     int id;
     string placa;
