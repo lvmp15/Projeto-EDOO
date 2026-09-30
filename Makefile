@@ -1,10 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
+CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude -MMD -MP
 LDLIBS = -lsqlite3
 
 # Pega main.cpp e todos os .cpp de src/, sem precisar editar aqui quando entrar classe nova
 SRCS = main.cpp $(wildcard src/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
+DEPS = $(OBJS:.o=.d)
 
 # No Windows o executavel precisa do .exe
 ifeq ($(OS),Windows_NT)
@@ -33,6 +34,8 @@ $(EXE): $(OBJS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(call FIXPATH,$(OBJS) $(EXE))
+	$(RM) $(call FIXPATH,$(OBJS) $(DEPS) $(EXE))
 
 .PHONY: all clean
+
+-include $(DEPS)
