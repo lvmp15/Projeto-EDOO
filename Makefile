@@ -5,13 +5,19 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
 SRCS = main.cpp $(wildcard src/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 
-# No Windows o executavel precisa do .exe e o comando de apagar e outro
+# No Windows o executavel precisa do .exe
 ifeq ($(OS),Windows_NT)
     EXE = estacionamento.exe
+else
+    EXE = estacionamento
+endif
+
+# O make escolhe sozinho entre o cmd do Windows e o sh, e o comando de apagar muda.
+# Da pra saber qual deles e porque so o cmd imprime as aspas junto no echo.
+ifeq ($(shell echo "x"),"x")
     RM = del /Q
     FIXPATH = $(subst /,\,$1)
 else
-    EXE = estacionamento
     RM = rm -f
     FIXPATH = $1
 endif
