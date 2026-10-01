@@ -15,15 +15,15 @@ int main()
             std::cout << "Rode antes: sqlite3 estacionamento.db \".read sql/schema.sql\"\n";
             return 1;
         }
+
+        Menu menu(banco);
+        menu.executar();
     }
     catch (const std::exception& e)
     {
-        std::cout << "Erro ao abrir o banco: " << e.what() << "\n";
+        std::cout << "Erro: " << e.what() << "\n";
         return 1;
     }
-
-    Menu menu;
-    menu.executar();
 
     return 0;
 }
