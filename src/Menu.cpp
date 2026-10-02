@@ -85,6 +85,38 @@ void Menu::executarOpcao(int opcao)
     }
 }
 
+
+void Menu::registrarPagamento(Ticket& ticket)
+{
+    int opcao = 0;
+
+    cout << "\n--- Pagamento ---\n";
+    cout << "1. Dinheiro\n2. Cartao\n3. Pix\n";
+
+    if (!lerInteiro("Metodo: ", 1, 3, opcao))
+    {
+        return;
+    }
+
+    string metodo;
+    if (opcao == 1) {
+        metodo = "dinheiro";
+    }
+    else if (opcao == 2) {
+        metodo = "cartao";
+    }
+    else {
+        metodo = "pix";
+    }
+
+    Pagamento pagamento(&ticket, metodo);
+    pagamento.confirmar();
+
+    cout << "\nPagamento confirmado: R$ " << pagamento.getValor() << "\n";
+
+    // salvar no banco quando existir o PagamentoDAO (sprint 2 05)
+}
+
 void Menu::cadastrarCliente()
 {
     string nome, cpf, telefone;
