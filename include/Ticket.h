@@ -6,33 +6,34 @@
 using namespace std;
 
 class Veiculo;
-class Vaga;
 
 class Ticket{
 
 private:
     int id;
-    Veiculo* veiculo;
-    Vaga* vaga;
+    int veiculoId;
+    int vagaId;
     time_t entrada;
     time_t saida;
     double valor;
 
 public:
-    Ticket(Veiculo* veiculo, Vaga* vaga, time_t entrada, int id = 0);
+    Ticket(int veiculoId, int vagaId, time_t entrada, int id = 0);
+
+    // usado pelo DAO pra remontar um ticket que ja esta no banco
+    Ticket(int veiculoId, int vagaId, time_t entrada, time_t saida, double valor, int id);
 
     int getId() const;
     void setId(int id);
 
-    Veiculo* getVeiculo() const;
-    Vaga* getVaga() const;
+    int getVeiculoId() const;
+    int getVagaId() const;
     time_t getEntrada() const;
     time_t getSaida() const;
     double getValor() const;
 
     bool estaAberto() const;
-    void registrarSaida(time_t saida);
-    double calcularValor() const;
+    void registrarSaida(time_t saida, const Veiculo& veiculo);
 };
 
 #endif
