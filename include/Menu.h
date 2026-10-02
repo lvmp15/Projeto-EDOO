@@ -8,6 +8,8 @@
 #include "ClienteDAO.h"
 #include "VeiculoDAO.h"
 #include "VagaDAO.h"
+#include "Ticket.h"
+#include "Pagamento.h"
 
 using namespace std;
 
@@ -18,6 +20,8 @@ private:
     ClienteDAO clienteDAO;
     VeiculoDAO veiculoDAO;
     VagaDAO vagaDAO;
+
+    void registrarPagamento(Ticket& ticket);
 
     void exibir() const;
     void executarOpcao(int opcao);
