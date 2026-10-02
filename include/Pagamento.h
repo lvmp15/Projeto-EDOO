@@ -21,6 +21,10 @@ private:
 public:
     Pagamento(Ticket* ticket, const string& metodo, int id = 0);
 
+    // usado pelo DAO pra remontar um pagamento que ja estava salvo no banco
+    Pagamento(Ticket* ticket, double valor, time_t data,
+              const string& metodo, const string& status, int id = 0);
+
     int getId() const;
     void setId(int id);
 
