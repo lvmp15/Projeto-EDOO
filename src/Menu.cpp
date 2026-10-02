@@ -1,6 +1,7 @@
 #include "Menu.h"
 #include "Carro.h"
 #include "Moto.h"
+#include "Caminhao.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -110,7 +111,7 @@ void Menu::cadastrarVeiculo()
     cout << "\n--- Cadastrar veiculo ---\n";
 
     if (!lerTexto("Placa: ", placa) || !lerTexto("Modelo: ", modelo) ||
-        !lerTexto("Tipo (Carro ou Moto): ", tipo))
+        !lerTexto("Tipo (Carro, Moto ou Caminhao): ", tipo))
     {
         return;
     }
@@ -122,9 +123,9 @@ void Menu::cadastrarVeiculo()
     }
 
     // Caminhao entra aqui quando a classe existir
-    if (tipo != "carro" && tipo != "moto")
+    if (tipo != "carro" && tipo != "moto" && tipo != "caminhao")
     {
-        throw invalid_argument("Tipo de veiculo invalido, use Carro ou Moto");
+        throw invalid_argument("Tipo de veiculo invalido, use Carro, Moto ou Caminhao");
     }
 
     if (!lerInteiro("Id do cliente dono: ", 1, INT_MAX, clienteId))

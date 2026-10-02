@@ -1,6 +1,7 @@
 #include "VeiculoDAO.h"
 #include "Carro.h"
 #include "Moto.h"
+#include "Caminhao.h"
 
 using namespace std;
 
@@ -209,6 +210,9 @@ unique_ptr<Veiculo> VeiculoDAO::montarVeiculo(sqlite3_stmt* comando) const
         return unique_ptr<Veiculo>(new Moto(placa, modelo, clienteId, id));
     }
 
-    // Caminhao entra aqui quando a classe existir
+    if (tipo == "Caminhao")
+    {
+        return unique_ptr<Veiculo>(new Caminhao(placa, modelo, clienteId, id));
+    }
     throw runtime_error("Tipo de veiculo ainda nao suportado: " + tipo);
 }
