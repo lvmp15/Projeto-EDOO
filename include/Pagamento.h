@@ -7,12 +7,14 @@
 
 using namespace std;
 
+// como so guarda um ponteiro de Ticket, basta declarar a classe aqui
 class Ticket;
 
 class Pagamento{
 
 private:
     int id;
+    // nao e dono do ticket, so aponta pra ele; por isso nao tem delete nem destrutor
     Ticket* ticket;
     double valor;
     time_t data;

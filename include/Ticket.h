@@ -7,6 +7,7 @@
 
 using namespace std;
 
+// aqui o Veiculo so aparece como referencia, entao basta declarar e o include fica no .cpp
 class Veiculo;
 
 class Ticket{

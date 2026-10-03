@@ -199,7 +199,8 @@ unique_ptr<Veiculo> VeiculoDAO::montarVeiculo(sqlite3_stmt* comando) const
     string tipo = (const char*) sqlite3_column_text(comando, 3);
     int clienteId = sqlite3_column_int(comando, 4);
 
-    // o tipo do banco decide qual subclasse criar
+    // o tipo do banco decide qual subclasse criar.
+    // o unique_ptr vira dono do objeto do new e chama o delete sozinho
     if (tipo == "Carro")
     {
         return unique_ptr<Veiculo>(new Carro(placa, modelo, clienteId, id));

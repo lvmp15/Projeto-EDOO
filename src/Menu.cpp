@@ -12,6 +12,7 @@
 
 using namespace std;
 
+// a referencia e os DAOs, que nao tem construtor padrao, so podem ser iniciados nessa lista
 Menu::Menu(BancoDados& banco)
     : banco(banco), clienteDAO(banco), veiculoDAO(banco), vagaDAO(banco), ticketDAO(banco),
       pagamentoDAO(banco)
@@ -118,6 +119,7 @@ Pagamento Menu::registrarPagamento(Ticket& ticket)
         metodo = "Pix";
     }
 
+    // passa o endereco do ticket, que e variavel do registrarSaida e continua vivo enquanto o pagamento existir
     Pagamento pagamento(&ticket, metodo);
     pagamento.confirmar();
 
@@ -262,6 +264,7 @@ void Menu::registrarEntrada()
         return;
     }
 
+    // referencia: o ocupar() muda a propria vaga do vetor, sem fazer copia
     Vaga& vaga = livres[posicao];
     Ticket ticket(veiculo->getId(), vaga.getId(), time(NULL));
 
@@ -337,8 +340,8 @@ void Menu::registrarSaida()
 
     Pagamento pagamento = registrarPagamento(ticket);
 
-    // vaga livre com ticket aberto so acontece se o banco ficou inconsistente,
-    // e nesse caso o veiculo sai do mesmo jeito em vez de o liberar() lancar logic_error
+    // vaga livre com ticket aberto so acontece com o banco inconsistente,
+    // ai o veiculo sai mesmo assim, sem o liberar() lancar logic_error
     if (vaga.estaOcupada())
     {
         vaga.liberar();
@@ -379,6 +382,7 @@ void Menu::registrarSaida()
     cout << "\nPagamento confirmado: R$ " << pagamento.getValor() << " (" << pagamento.getMetodo() << ")\n";
     cout << "Saida registrada, vaga " << vaga.getNumero() << " liberada.\n";
 }
+
 void Menu::consultarVagas() const
 {
     int filtro = 0;
@@ -669,7 +673,7 @@ void Menu::alterarVeiculo()
         return;
     }
 
-    // o DAO devolve unique_ptr pq Veiculo e abstrato
+    // o DAO devolve unique_ptr pq Veiculo e abstrato, e ele da o delete sozinho no fim da funcao
     unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorId(id);
     cout << "\nVeiculo encontrado:\n" << *veiculo << "\n";
 
@@ -987,7 +991,7 @@ string Menu::traduzirErro(const string& mensagem) const
     }
 
     // erro do banco que nao foi previsto tambem nao vai cru para a tela.
-    // "Erro ao executar SQL" vem do BEGIN, COMMIT e ROLLBACK do BancoDados
+    // "Erro ao executar SQL" vem do BEGIN, COMMIT e ROLLBACK
     if (mensagem.find("Erro no banco") == 0 || mensagem.find("Erro ao preparar SQL") == 0 ||
         mensagem.find("Erro ao executar SQL") == 0)
     {

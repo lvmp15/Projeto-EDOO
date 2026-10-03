@@ -17,7 +17,7 @@ class PagamentoDAO
 {
 
 private:
-    // so usa a conexao, quem abre e fecha e o BancoDados
+    // so usa a conexao, quem abre e fecha e o BancoDados, por isso o DAO nao tem destrutor
     sqlite3* conexao;
 
     sqlite3_stmt* preparar(const string& sql) const;
@@ -39,6 +39,7 @@ private:
 public:
     PagamentoDAO(BancoDados& banco);
 
+    // referencia sem const pq o id gerado pelo banco e gravado de volta no pagamento
     void inserir(Pagamento& pagamento);
 
     // o Ticket ja vem carregado de fora, o DAO so liga ele ao pagamento lido

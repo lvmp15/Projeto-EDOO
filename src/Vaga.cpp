@@ -93,6 +93,7 @@ bool Vaga::aceita(const Veiculo& veiculo) const
     return tipo == veiculo.getTipo();
 }
 
+// lanca excecao pra nunca ter dois veiculos na mesma vaga
 void Vaga::ocupar()
 {
     if (ocupada)

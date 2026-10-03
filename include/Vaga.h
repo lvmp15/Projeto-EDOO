@@ -11,9 +11,11 @@ using namespace std;
 class Vaga{
 
 private:
+    // id 0 quer dizer que a vaga ainda nao foi gravada no banco
     int id;
     int numero;
     string tipo;
+    // sem setter de proposito: so muda pelo ocupar() e liberar(), que conferem o estado antes
     bool ocupada;
 
     string normalizarTipo(const string& tipo) const;
@@ -33,7 +35,7 @@ public:
 
     bool estaOcupada() const;
 
-    // compara o tipo da vaga com o tipo do veiculo
+    // compara o tipo da vaga com o do veiculo; por ser referencia, chama o getTipo() da classe filha
     bool aceita(const Veiculo& veiculo) const;
 
     void ocupar();

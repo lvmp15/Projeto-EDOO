@@ -2,12 +2,13 @@
 
 using namespace std;
 
-// taxa por hora específica de Carro
+// taxas do Carro; o namespace sem nome deixa elas visiveis so neste arquivo
 namespace{
     const double taxaHoraCarro = 2.5;
     const double taxaFixa = 10.0;
 }
 
+// so repassa os dados pro construtor de Veiculo, que ja faz as validacoes
 Carro::Carro(const string& placa, const string& modelo, int clienteId, int id)
     : Veiculo(placa, modelo, clienteId, id){}
 
