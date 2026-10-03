@@ -367,10 +367,204 @@ void Menu::registrarSaida()
     cout << "\nPagamento confirmado: R$ " << pagamento.getValor() << " (" << pagamento.getMetodo() << ")\n";
     cout << "Saida registrada, vaga " << vaga.getNumero() << " liberada.\n";
 }
-void Menu::consultarVagas() const      { emConstrucao("Consultar vagas"); }
-void Menu::consultarVeiculos() const   { emConstrucao("Consultar veiculos"); }
-void Menu::consultarTickets() const    { emConstrucao("Consultar tickets"); }
-void Menu::consultarPagamentos() const { emConstrucao("Consultar pagamentos"); }
+void Menu::consultarVagas() const
+{
+    int filtro = 0;
+
+    cout << "\n--- Consultar vagas ---\n";
+    cout << "1. Todas\n";
+    cout << "2. So as livres\n";
+    cout << "3. So as ocupadas\n";
+    cout << "0. Voltar\n";
+
+    if (!lerInteiro("Opcao: ", 0, 3, filtro) || filtro == 0)
+    {
+        return;
+    }
+
+    vector<Vaga> vagas = vagaDAO.listarTodas();
+
+    if (vagas.empty())
+    {
+        cout << "\nNao ha vagas cadastradas.\n";
+        return;
+    }
+
+    // o resumo conta todas as vagas, o filtro so decide quais linhas aparecem
+    int livres = 0;
+    int ocupadas = 0;
+
+    for (unsigned int i = 0; i < vagas.size(); i++)
+    {
+        if (vagas[i].estaOcupada())
+        {
+            ocupadas++;
+        }
+        else
+        {
+            livres++;
+        }
+    }
+
+    if (filtro == 2 && livres == 0)
+    {
+        cout << "\nNao ha vagas livres no momento.\n";
+    }
+    else if (filtro == 3 && ocupadas == 0)
+    {
+        cout << "\nNao ha vagas ocupadas no momento.\n";
+    }
+    else
+    {
+        cout << "\n" << left << setw(6) << "Id" << setw(8) << "Numero" << setw(10) << "Tipo" << "Situacao\n";
+        cout << string(32, '-') << "\n";
+
+        for (unsigned int i = 0; i < vagas.size(); i++)
+        {
+            bool mostrar = filtro == 1 || (filtro == 2 && !vagas[i].estaOcupada()) ||
+                           (filtro == 3 && vagas[i].estaOcupada());
+
+            if (mostrar)
+            {
+                cout << setw(6) << vagas[i].getId() << setw(8) << vagas[i].getNumero()
+                     << setw(10) << vagas[i].getTipo() << (vagas[i].estaOcupada() ? "Ocupada" : "Livre") << "\n";
+            }
+        }
+    }
+
+    cout << "\nLivres: " << livres << " | Ocupadas: " << ocupadas << " | Total: " << vagas.size() << "\n";
+}
+
+void Menu::consultarVeiculos() const
+{
+    cout << "\n--- Consultar veiculos ---\n";
+
+    vector<unique_ptr<Veiculo>> veiculos = veiculoDAO.listarTodos();
+
+    if (veiculos.empty())
+    {
+        cout << "\nNao ha veiculos cadastrados.\n";
+        return;
+    }
+
+    cout << "\n" << left << setw(5) << "Id" << setw(10) << "Placa" << setw(16) << "Modelo"
+         << setw(10) << "Tipo" << "Dono\n";
+    cout << string(60, '-') << "\n";
+
+    for (unsigned int i = 0; i < veiculos.size(); i++)
+    {
+        // o veiculo so guarda o id do dono, o nome vem do ClienteDAO
+        Cliente dono = clienteDAO.buscarPorId(veiculos[i]->getClienteId());
+
+        cout << setw(5) << veiculos[i]->getId() << setw(10) << veiculos[i]->getPlaca()
+             << setw(16) << veiculos[i]->getModelo() << setw(10) << veiculos[i]->getTipo()
+             << dono.getNome() << "\n";
+    }
+
+    cout << "\nTotal: " << veiculos.size() << " veiculo(s)\n";
+}
+
+void Menu::consultarTickets() const
+{
+    int filtro = 0;
+
+    cout << "\n--- Consultar tickets ---\n";
+    cout << "1. Todos\n";
+    cout << "2. So os abertos\n";
+    cout << "0. Voltar\n";
+
+    if (!lerInteiro("Opcao: ", 0, 2, filtro) || filtro == 0)
+    {
+        return;
+    }
+
+    vector<Ticket> tickets;
+
+    if (filtro == 1)
+    {
+        tickets = ticketDAO.listarTodos();
+    }
+    else
+    {
+        tickets = ticketDAO.listarAbertos();
+    }
+
+    if (tickets.empty())
+    {
+        if (filtro == 1)
+        {
+            cout << "\nNao ha tickets registrados.\n";
+        }
+        else
+        {
+            cout << "\nNao ha tickets abertos, nenhum veiculo esta no estacionamento.\n";
+        }
+        return;
+    }
+
+    cout << "\n" << left << setw(5) << "Id" << setw(10) << "Placa" << setw(6) << "Vaga"
+         << setw(21) << "Entrada" << setw(21) << "Saida" << "Valor (R$)\n";
+    cout << string(73, '-') << "\n";
+
+    for (unsigned int i = 0; i < tickets.size(); i++)
+    {
+        // o ticket so guarda os ids, placa e numero da vaga vem dos outros DAOs
+        unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorId(tickets[i].getVeiculoId());
+        Vaga vaga = vagaDAO.buscarPorId(tickets[i].getVagaId());
+
+        cout << setw(5) << tickets[i].getId() << setw(10) << veiculo->getPlaca()
+             << setw(6) << vaga.getNumero() << setw(21) << formatarData(tickets[i].getEntrada());
+
+        if (tickets[i].estaAberto())
+        {
+            cout << setw(21) << "em aberto" << "-\n";
+        }
+        else
+        {
+            cout << setw(21) << formatarData(tickets[i].getSaida())
+                 << fixed << setprecision(2) << tickets[i].getValor() << "\n";
+        }
+    }
+
+    cout << "\nTotal: " << tickets.size() << " ticket(s)\n";
+}
+
+void Menu::consultarPagamentos() const
+{
+    cout << "\n--- Consultar pagamentos ---\n";
+
+    // cada pagamento aponta para um ticket desse vetor, que nao pode mudar enquanto eles forem usados
+    vector<Ticket> tickets = ticketDAO.listarTodos();
+    vector<Pagamento> pagamentos = pagamentoDAO.listarTodos(tickets);
+
+    if (pagamentos.empty())
+    {
+        cout << "\nNao ha pagamentos registrados.\n";
+        return;
+    }
+
+    cout << "\n" << left << setw(5) << "Id" << setw(8) << "Ticket" << setw(10) << "Placa"
+         << setw(12) << "Valor (R$)" << setw(21) << "Data" << setw(10) << "Metodo" << "Status\n";
+    cout << string(76, '-') << "\n";
+
+    double arrecadado = 0.0;
+
+    for (unsigned int i = 0; i < pagamentos.size(); i++)
+    {
+        Ticket* ticket = pagamentos[i].getTicket();
+        unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorId(ticket->getVeiculoId());
+
+        cout << setw(5) << pagamentos[i].getId() << setw(8) << ticket->getId()
+             << setw(10) << veiculo->getPlaca()
+             << setw(12) << fixed << setprecision(2) << pagamentos[i].getValor()
+             << setw(21) << formatarData(pagamentos[i].getData())
+             << setw(10) << pagamentos[i].getMetodo() << pagamentos[i].getStatus() << "\n";
+
+        arrecadado += pagamentos[i].getValor();
+    }
+
+    cout << "\nTotal: " << pagamentos.size() << " pagamento(s) | Arrecadado: R$ " << arrecadado << "\n";
+}
 
 void Menu::alterarCadastro()
 {
@@ -719,11 +913,6 @@ int Menu::escolherCadastro(const string& acao) const
     }
 
     return tipo;
-}
-
-void Menu::emConstrucao(const string& nome) const
-{
-    cout << "\n[" << nome << "] ainda nao implementado.\n";
 }
 
 // troca a mensagem tecnica do sqlite por uma que o usuario entenda

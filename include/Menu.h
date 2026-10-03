@@ -34,7 +34,7 @@ private:
     void exibir() const;
     void executarOpcao(int opcao);
 
-    // as onze opcoes do menu, as const ainda nao foram ligadas ao banco
+    // as onze opcoes do menu, as consultas sao const pq so leem do banco
     void cadastrarCliente();
     void cadastrarVeiculo();
     void cadastrarVaga();
@@ -56,7 +56,6 @@ private:
 
     // submenu de alterar e excluir: devolve 1 cliente, 2 veiculo, 3 vaga ou 0 para voltar
     int escolherCadastro(const string& acao) const;
-    void emConstrucao(const string& nome) const;
     string traduzirErro(const string& mensagem) const;
     bool ehErroDeChaveEstrangeira(const runtime_error& erro) const;
     string formatarData(time_t data) const;

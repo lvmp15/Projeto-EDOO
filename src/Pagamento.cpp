@@ -30,3 +30,33 @@ double Pagamento::getValor() const { return valor; }
 time_t Pagamento::getData() const { return data; }
 string Pagamento::getMetodo() const { return metodo; }
 string Pagamento::getStatus() const { return status; }
+
+void Pagamento::exibir(ostream& saida) const {
+    saida << "Id: " << id << " | Ticket: ";
+
+    if (ticket != nullptr) {
+        saida << ticket->getId();
+    }
+    else {
+        saida << "-";
+    }
+
+    saida << " | Valor: " << valor << " | Data: ";
+
+    // data 0 e de pagamento pendente, que ainda nao foi confirmado
+    if (data != 0) {
+        char texto[20];
+        strftime(texto, sizeof(texto), "%Y-%m-%d %H:%M:%S", localtime(&data));
+        saida << texto;
+    }
+    else {
+        saida << "-";
+    }
+
+    saida << " | Metodo: " << metodo << " | Status: " << status;
+}
+
+ostream& operator<<(ostream& saida, const Pagamento& pagamento) {
+    pagamento.exibir(saida);
+    return saida;
+}

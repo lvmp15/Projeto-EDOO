@@ -2,6 +2,8 @@
 #define TICKET_H
 
 #include <ctime>
+#include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -16,6 +18,8 @@ private:
     time_t entrada;
     time_t saida;
     double valor;
+
+    string formatarData(time_t data) const;
 
 public:
     Ticket(int veiculoId, int vagaId, time_t entrada, int id = 0);
@@ -34,6 +38,11 @@ public:
 
     bool estaAberto() const;
     void registrarSaida(time_t saida, const Veiculo& veiculo);
+
+    // fluxo e nao saida, pq saida ja e o atributo da hora de saida
+    void exibir(ostream& fluxo) const;
 };
+
+ostream& operator<<(ostream& fluxo, const Ticket& ticket);
 
 #endif

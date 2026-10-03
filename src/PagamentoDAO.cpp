@@ -71,6 +71,12 @@ Pagamento PagamentoDAO::buscarPorTicket(Ticket* ticket) const
     }
 }
 
+vector<Pagamento> PagamentoDAO::listarTodos(vector<Ticket>& tickets) const
+{
+    // ticket_id vem por ultimo para nao mudar as posicoes que o montarPagamento le
+    return listar("SELECT id, valor, data, metodo, status, ticket_id FROM pagamento ORDER BY id;", tickets);
+}
+
 bool PagamentoDAO::atualizar(const Pagamento& pagamento)
 {
     validar(pagamento);
@@ -176,13 +182,64 @@ Pagamento PagamentoDAO::montarPagamento(sqlite3_stmt* comando, Ticket* ticket) c
     return Pagamento(ticket, valor, data, metodo, status, id);
 }
 
+// alem das colunas do montarPagamento, o sql precisa trazer o ticket_id na posicao 5
+vector<Pagamento> PagamentoDAO::listar(const string& sql, vector<Ticket>& tickets) const
+{
+    sqlite3_stmt* comando = preparar(sql);
+
+    vector<Pagamento> pagamentos;
+    int resultado = sqlite3_step(comando);
+
+    try
+    {
+        while (resultado == SQLITE_ROW)
+        {
+            int ticketId = sqlite3_column_int(comando, 5);
+            Ticket* ticket = NULL;
+
+            // procura no vetor de quem chamou o ticket dessa linha
+            for (unsigned int i = 0; i < tickets.size() && ticket == NULL; i++)
+            {
+                if (tickets[i].getId() == ticketId)
+                {
+                    ticket = &tickets[i];
+                }
+            }
+
+            if (ticket == NULL)
+            {
+                throw runtime_error("Ticket do pagamento nao foi carregado: id " + to_string(ticketId));
+            }
+
+            pagamentos.push_back(montarPagamento(comando, ticket));
+            resultado = sqlite3_step(comando);
+        }
+    }
+    catch (...)
+    {
+        sqlite3_finalize(comando);
+        throw;
+    }
+
+    if (resultado != SQLITE_DONE)
+    {
+        throw finalizarComErro(comando);
+    }
+
+    sqlite3_finalize(comando);
+
+    return pagamentos;
+}
+
 // aceita qualquer caixa (pix, PIX, Pix) e grava como o CHECK da tabela espera
 string PagamentoDAO::metodoParaBanco(const string& metodo) const
 {
     string minusculo = metodo;
 
-    transform(minusculo.begin(), minusculo.end(), minusculo.begin(),
-              [](unsigned char c) { return tolower(c); });
+    for (unsigned int i = 0; i < minusculo.length(); i++)
+    {
+        minusculo[i] = (char) tolower(minusculo[i]);
+    }
 
     if (minusculo == "dinheiro")
     {
