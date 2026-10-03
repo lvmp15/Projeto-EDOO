@@ -4,6 +4,7 @@
 #include "Caminhao.h"
 
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 #include <cerrno>
 #include <cctype>
@@ -12,7 +13,8 @@
 using namespace std;
 
 Menu::Menu(BancoDados& banco)
-    : banco(banco), clienteDAO(banco), veiculoDAO(banco), vagaDAO(banco), ticketDAO(banco)
+    : banco(banco), clienteDAO(banco), veiculoDAO(banco), vagaDAO(banco), ticketDAO(banco),
+      pagamentoDAO(banco)
 {
 }
 
@@ -86,16 +88,17 @@ void Menu::executarOpcao(int opcao)
 }
 
 
-void Menu::registrarPagamento(Ticket& ticket)
+Pagamento Menu::registrarPagamento(Ticket& ticket)
 {
     int opcao = 0;
 
     cout << "\n--- Pagamento ---\n";
     cout << "1. Dinheiro\n2. Cartao\n3. Pix\n";
 
+    // sem metodo nao tem pagamento, e nada foi gravado ainda
     if (!lerInteiro("Metodo: ", 1, 3, opcao))
     {
-        return;
+        throw runtime_error("Pagamento cancelado, a saida nao foi registrada.");
     }
 
     string metodo;
@@ -112,9 +115,7 @@ void Menu::registrarPagamento(Ticket& ticket)
     Pagamento pagamento(&ticket, metodo);
     pagamento.confirmar();
 
-    cout << "\nPagamento confirmado: R$ " << pagamento.getValor() << "\n";
-
-    // salvar no banco quando existir o PagamentoDAO (sprint 2 05)
+    return pagamento;
 }
 
 void Menu::cadastrarCliente()
@@ -217,18 +218,8 @@ void Menu::registrarEntrada()
         return;
     }
 
-    // no banco a placa fica sem traco e maiuscula, igual o setPlaca do Veiculo deixa
-    string placaBusca;
-    for (unsigned int i = 0; i < placa.length(); i++)
-    {
-        if (placa[i] != '-' && placa[i] != ' ')
-        {
-            placaBusca += (char) toupper(placa[i]);
-        }
-    }
-
     // se a placa nao existir o DAO lanca "Veiculo nao encontrado" e volta pro menu
-    unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorPlaca(placaBusca);
+    unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorPlaca(normalizarPlaca(placa));
 
     if (ticketDAO.temTicketAberto(veiculo->getId()))
     {
@@ -299,7 +290,83 @@ void Menu::registrarEntrada()
          << " | Entrada: " << formatarData(ticket.getEntrada()) << "\n";
 }
 
-void Menu::registrarSaida() const     { emConstrucao("Registrar saida"); }
+void Menu::registrarSaida()
+{
+    string placa;
+
+    cout << "\n--- Registrar saida ---\n";
+
+    if (!lerTexto("Placa: ", placa))
+    {
+        return;
+    }
+
+    unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorPlaca(normalizarPlaca(placa));
+
+    if (!ticketDAO.temTicketAberto(veiculo->getId()))
+    {
+        cout << "\nO veiculo " << veiculo->getPlaca() << " nao esta no estacionamento.\n";
+        return;
+    }
+
+    Ticket ticket = ticketDAO.buscarAbertoPorVeiculo(veiculo->getId());
+    Vaga vaga = vagaDAO.buscarPorId(ticket.getVagaId());
+
+    // a tarifa sai do calcularTarifa do veiculo, que e virtual, o menu nao faz conta
+    ticket.registrarSaida(time(NULL), *veiculo);
+
+    cout << "\nPlaca: " << veiculo->getPlaca() << " | Tipo: " << veiculo->getTipo()
+         << " | Vaga: " << vaga.getNumero() << "\n";
+    cout << "Entrada: " << formatarData(ticket.getEntrada()) << "\n";
+    cout << "Saida: " << formatarData(ticket.getSaida()) << "\n";
+    cout << "Permanencia: " << formatarPermanencia(ticket.getEntrada(), ticket.getSaida()) << "\n";
+    cout << fixed << setprecision(2);
+    cout << "Valor a pagar: R$ " << ticket.getValor() << "\n";
+
+    Pagamento pagamento = registrarPagamento(ticket);
+
+    // vaga livre com ticket aberto so acontece se o banco ficou inconsistente,
+    // e nesse caso o veiculo sai do mesmo jeito em vez de o liberar() lancar logic_error
+    if (vaga.estaOcupada())
+    {
+        vaga.liberar();
+    }
+
+    // ticket, vaga e pagamento gravam juntos ou nenhum dos tres
+    banco.executar("BEGIN;");
+
+    try
+    {
+        if (!ticketDAO.atualizar(ticket))
+        {
+            throw runtime_error("Ticket nao encontrado, saida cancelada.");
+        }
+
+        if (!vagaDAO.atualizar(vaga))
+        {
+            throw runtime_error("Vaga nao encontrada, saida cancelada.");
+        }
+
+        pagamentoDAO.inserir(pagamento);
+
+        banco.executar("COMMIT;");
+    }
+    catch (...)
+    {
+        // se o sqlite ja desfez sozinho o ROLLBACK falha, e o erro que importa e o de cima
+        try
+        {
+            banco.executar("ROLLBACK;");
+        }
+        catch (runtime_error&)
+        {
+        }
+        throw;
+    }
+
+    cout << "\nPagamento confirmado: R$ " << pagamento.getValor() << " (" << pagamento.getMetodo() << ")\n";
+    cout << "Saida registrada, vaga " << vaga.getNumero() << " liberada.\n";
+}
 void Menu::consultarVagas() const      { emConstrucao("Consultar vagas"); }
 void Menu::consultarVeiculos() const   { emConstrucao("Consultar veiculos"); }
 void Menu::consultarTickets() const    { emConstrucao("Consultar tickets"); }
@@ -705,6 +772,30 @@ string Menu::formatarData(time_t data) const
     strftime(texto, sizeof(texto), "%Y-%m-%d %H:%M:%S", localtime(&data));
 
     return texto;
+}
+
+// so pra mostrar, tipo "2h 15min"; a tarifa usa as horas exatas
+string Menu::formatarPermanencia(time_t entrada, time_t saida) const
+{
+    long minutos = (long) (difftime(saida, entrada) / 60);
+
+    return to_string(minutos / 60) + "h " + to_string(minutos % 60) + "min";
+}
+
+// no banco a placa fica sem traco e maiuscula, igual o setPlaca do Veiculo deixa
+string Menu::normalizarPlaca(const string& placa) const
+{
+    string normalizada;
+
+    for (unsigned int i = 0; i < placa.length(); i++)
+    {
+        if (placa[i] != '-' && placa[i] != ' ')
+        {
+            normalizada += (char) toupper(placa[i]);
+        }
+    }
+
+    return normalizada;
 }
 
 // repete a pergunta ate vir um inteiro valido dentro de minimo e maximo

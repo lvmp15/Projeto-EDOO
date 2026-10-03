@@ -10,6 +10,7 @@
 #include "VeiculoDAO.h"
 #include "VagaDAO.h"
 #include "TicketDAO.h"
+#include "PagamentoDAO.h"
 #include "Ticket.h"
 #include "Pagamento.h"
 
@@ -25,8 +26,10 @@ private:
     VeiculoDAO veiculoDAO;
     VagaDAO vagaDAO;
     TicketDAO ticketDAO;
+    PagamentoDAO pagamentoDAO;
 
-    void registrarPagamento(Ticket& ticket);
+    // so monta e confirma, quem grava e o registrarSaida dentro da transacao
+    Pagamento registrarPagamento(Ticket& ticket);
 
     void exibir() const;
     void executarOpcao(int opcao);
@@ -36,7 +39,7 @@ private:
     void cadastrarVeiculo();
     void cadastrarVaga();
     void registrarEntrada();
-    void registrarSaida() const;
+    void registrarSaida();
     void consultarVagas() const;
     void consultarVeiculos() const;
     void consultarTickets() const;
@@ -57,6 +60,8 @@ private:
     string traduzirErro(const string& mensagem) const;
     bool ehErroDeChaveEstrangeira(const runtime_error& erro) const;
     string formatarData(time_t data) const;
+    string formatarPermanencia(time_t entrada, time_t saida) const;
+    string normalizarPlaca(const string& placa) const;
 
     bool lerInteiro(const string& pergunta, int minimo, int maximo, int& valor) const;
     bool lerTexto(const string& pergunta, string& valor, bool podeVazio = false) const;
