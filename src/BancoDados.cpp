@@ -18,6 +18,9 @@ BancoDados::BancoDados(const string& caminho)
         throw runtime_error("Erro ao abrir o banco: " + erro);
     }
 
+    // se outro programa estiver com o banco aberto, espera ate 2s em vez de falhar na hora
+    sqlite3_busy_timeout(conexao, 2000);
+
     // o sqlite ignora chave estrangeira por padrao, precisa ligar em toda conexao
     try
     {

@@ -43,9 +43,10 @@ string Cliente::getCpf() const
 
 void Cliente::setCpf(const string& cpf)
 {
-    string cpfLimpo = somenteDigitos(cpf);
+    // tira so a pontuacao, entao uma letra no meio continua la e o CPF e recusado
+    string cpfLimpo = removerCaracteres(cpf, ".- ");
     if (!cpfValido(cpfLimpo)) {
-        throw invalid_argument("CPF invalido");
+        throw invalid_argument("CPF invalido: " + cpf + " (use 11 digitos, com ou sem ponto e hifen)");
     }
     this->cpf = cpfLimpo;
 }
@@ -62,13 +63,12 @@ void Cliente::setTelefone(const string& telefone)
         this->telefone = "";
         return;
     }
-    else if(!telefone.empty()) {
-        string telefoneLimpo = somenteDigitos(telefone);
-        if (!telefoneValido(telefoneLimpo)) {
-          throw invalid_argument("Telefone invalido");
-     }
-     this->telefone = telefoneLimpo;
-}
+
+    string telefoneLimpo = removerCaracteres(telefone, "()- ");
+    if (!telefoneValido(telefoneLimpo)) {
+        throw invalid_argument("Telefone invalido: " + telefone + " (use DDD e numero, 10 ou 11 digitos)");
+    }
+    this->telefone = telefoneLimpo;
 }
 
 bool Cliente::temTelefone() const
@@ -79,27 +79,37 @@ bool Cliente::temTelefone() const
 }
 
 
-string Cliente::somenteDigitos(const string& texto) const
+// tira de texto todos os caracteres que aparecem em remover
+string Cliente::removerCaracteres(const string& texto, const string& remover) const
 {
     string resultado;
-    for (char c : texto) {
-        if (isdigit(c)) {
-            resultado += c;
+    for (unsigned int i = 0; i < texto.length(); i++) {
+        if (remover.find(texto[i]) == string::npos) {
+            resultado += texto[i];
         }
     }
     return resultado;
 }
 
+bool Cliente::todosDigitos(const string& texto) const
+{
+    for (unsigned int i = 0; i < texto.length(); i++) {
+        if (!isdigit((unsigned char) texto[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// so quantidade e formato, o digito verificador nao e conferido
 bool Cliente::cpfValido(const string& cpf) const
 {
-    bool tamanhoCerto = cpf.length() == 11;
-    return tamanhoCerto;
+    return cpf.length() == 11 && todosDigitos(cpf);
 }
 
 bool Cliente::telefoneValido(const string& telefone) const
 {
-    bool tamanhoCerto = telefone.length() == 10 || telefone.length() == 11;
-    return tamanhoCerto;
+    return (telefone.length() == 10 || telefone.length() == 11) && todosDigitos(telefone);
 }
 
 void Cliente::exibir(ostream& saida) const

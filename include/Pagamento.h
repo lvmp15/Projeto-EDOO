@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -35,6 +36,10 @@ public:
     string getStatus() const;
 
     void confirmar();
+
+    void exibir(ostream& saida) const;
 };
+
+ostream& operator<<(ostream& saida, const Pagamento& pagamento);
 
 #endif

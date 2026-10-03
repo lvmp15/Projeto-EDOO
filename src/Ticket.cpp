@@ -27,7 +27,41 @@ void Ticket::registrarSaida(time_t saida, const Veiculo& veiculo) {
         throw invalid_argument("Veiculo nao corresponde ao ticket");
     }
 
+    // o banco tambem exige isso (CHECK saida > entrada), aqui o erro sai legivel
+    if (saida <= entrada) {
+        throw invalid_argument("A saida precisa ser depois da entrada");
+    }
+
     this->saida = saida;
     double horas = difftime(saida, entrada) / 3600.0;
     valor = veiculo.calcularTarifa(horas);
+}
+
+// mesmo formato 'YYYY-MM-DD HH:MM:SS' em hora local que vai pro banco
+string Ticket::formatarData(time_t data) const {
+    char texto[20];
+
+    strftime(texto, sizeof(texto), "%Y-%m-%d %H:%M:%S", localtime(&data));
+
+    return texto;
+}
+
+void Ticket::exibir(ostream& fluxo) const {
+    fluxo << "Id: " << id
+          << " | Veiculo: " << veiculoId
+          << " | Vaga: " << vagaId
+          << " | Entrada: " << formatarData(entrada)
+          << " | Saida: ";
+
+    if (estaAberto()) {
+        fluxo << "em aberto | Valor: -";
+    }
+    else {
+        fluxo << formatarData(saida) << " | Valor: " << valor;
+    }
+}
+
+ostream& operator<<(ostream& fluxo, const Ticket& ticket) {
+    ticket.exibir(fluxo);
+    return fluxo;
 }
