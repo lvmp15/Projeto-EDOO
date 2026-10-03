@@ -56,6 +56,8 @@ private:
 
     // submenu de alterar e excluir: devolve 1 cliente, 2 veiculo, 3 vaga ou 0 para voltar
     int escolherCadastro(const string& acao) const;
+    // lista id e nome antes de pedir o id; devolve false se nao houver cliente
+    bool mostrarClientes() const;
     string traduzirErro(const string& mensagem) const;
     bool ehErroDeChaveEstrangeira(const runtime_error& erro) const;
     string formatarData(time_t data) const;

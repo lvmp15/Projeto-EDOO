@@ -85,6 +85,12 @@ void Menu::executarOpcao(int opcao)
     {
         cout << "\nErro: " << traduzirErro(e.what()) << "\n";
     }
+    catch (exception&)
+    {
+        // rede de seguranca: o logic_error da Vaga e erros da biblioteca padrao nao fecham o programa,
+        // e a mensagem tecnica deles nao vai pra tela
+        cout << "\nErro interno, a operacao foi cancelada.\n";
+    }
 }
 
 
@@ -142,6 +148,12 @@ void Menu::cadastrarVeiculo()
     int clienteId = 0;
 
     cout << "\n--- Cadastrar veiculo ---\n";
+
+    // sem cliente nao tem dono pra escolher, entao nem pede os dados do veiculo
+    if (!mostrarClientes())
+    {
+        return;
+    }
 
     if (!lerTexto("Placa: ", placa) || !lerTexto("Modelo: ", modelo) ||
         !lerTexto("Tipo (Carro, Moto ou Caminhao): ", tipo))
@@ -592,7 +604,7 @@ void Menu::alterarCliente()
     int campo = 0;
     string valor;
 
-    if (!lerInteiro("Id do cliente: ", 1, INT_MAX, id))
+    if (!mostrarClientes() || !lerInteiro("Id do cliente: ", 1, INT_MAX, id))
     {
         return;
     }
@@ -692,7 +704,7 @@ void Menu::alterarVeiculo()
     else
     {
         int clienteId = 0;
-        if (!lerInteiro("Id do novo dono: ", 1, INT_MAX, clienteId))
+        if (!mostrarClientes() || !lerInteiro("Id do novo dono: ", 1, INT_MAX, clienteId))
         {
             return;
         }
@@ -746,6 +758,13 @@ void Menu::alterarVaga()
     }
     else
     {
+        // com veiculo dentro, trocar o tipo deixaria por exemplo um caminhao numa vaga de moto
+        if (vaga.estaOcupada())
+        {
+            cout << "\nA vaga esta ocupada, o tipo so pode mudar depois que o veiculo sair.\n";
+            return;
+        }
+
         string tipo;
         if (!lerTexto("Novo tipo (Carro, Moto ou Caminhao): ", tipo))
         {
@@ -768,7 +787,7 @@ void Menu::excluirCliente()
 {
     int id = 0;
 
-    if (!lerInteiro("Id do cliente: ", 1, INT_MAX, id))
+    if (!mostrarClientes() || !lerInteiro("Id do cliente: ", 1, INT_MAX, id))
     {
         return;
     }
@@ -915,6 +934,29 @@ int Menu::escolherCadastro(const string& acao) const
     return tipo;
 }
 
+bool Menu::mostrarClientes() const
+{
+    vector<Cliente> clientes = clienteDAO.listarTodos();
+
+    if (clientes.empty())
+    {
+        cout << "\nNao ha clientes cadastrados, cadastre um cliente antes (opcao 1).\n";
+        return false;
+    }
+
+    cout << "\nClientes cadastrados:\n";
+    cout << left << setw(5) << "Id" << "Nome\n";
+    cout << string(30, '-') << "\n";
+
+    for (unsigned int i = 0; i < clientes.size(); i++)
+    {
+        cout << setw(5) << clientes[i].getId() << clientes[i].getNome() << "\n";
+    }
+
+    cout << "\n";
+    return true;
+}
+
 // troca a mensagem tecnica do sqlite por uma que o usuario entenda
 string Menu::traduzirErro(const string& mensagem) const
 {
@@ -938,8 +980,16 @@ string Menu::traduzirErro(const string& mensagem) const
         return "O registro esta ligado a outro cadastro, operacao cancelada.";
     }
 
-    // erro do banco que nao foi previsto tambem nao vai cru para a tela
-    if (mensagem.find("Erro no banco") == 0 || mensagem.find("Erro ao preparar SQL") == 0)
+    // acontece se outro programa (DB Browser, outro terminal) estiver usando o arquivo
+    if (mensagem.find("database is locked") != string::npos)
+    {
+        return "O banco esta em uso por outro programa, feche-o e tente de novo.";
+    }
+
+    // erro do banco que nao foi previsto tambem nao vai cru para a tela.
+    // "Erro ao executar SQL" vem do BEGIN, COMMIT e ROLLBACK do BancoDados
+    if (mensagem.find("Erro no banco") == 0 || mensagem.find("Erro ao preparar SQL") == 0 ||
+        mensagem.find("Erro ao executar SQL") == 0)
     {
         return "Nao foi possivel concluir a operacao no banco de dados.";
     }
