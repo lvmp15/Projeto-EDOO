@@ -12,7 +12,7 @@
 using namespace std;
 
 Menu::Menu(BancoDados& banco)
-    : clienteDAO(banco), veiculoDAO(banco), vagaDAO(banco)
+    : banco(banco), clienteDAO(banco), veiculoDAO(banco), vagaDAO(banco), ticketDAO(banco)
 {
 }
 
@@ -100,13 +100,13 @@ void Menu::registrarPagamento(Ticket& ticket)
 
     string metodo;
     if (opcao == 1) {
-        metodo = "dinheiro";
+        metodo = "Dinheiro";
     }
     else if (opcao == 2) {
-        metodo = "cartao";
+        metodo = "Cartao";
     }
     else {
-        metodo = "pix";
+        metodo = "Pix";
     }
 
     Pagamento pagamento(&ticket, metodo);
@@ -154,7 +154,7 @@ void Menu::cadastrarVeiculo()
         tipo[i] = (char) tolower(tipo[i]);
     }
 
-    // Caminhao entra aqui quando a classe existir
+    
     if (tipo != "carro" && tipo != "moto" && tipo != "caminhao")
     {
         throw invalid_argument("Tipo de veiculo invalido, use Carro, Moto ou Caminhao");
@@ -174,11 +174,17 @@ void Menu::cadastrarVeiculo()
         veiculoDAO.inserir(carro);
         cout << "\nVeiculo cadastrado para " << dono.getNome() << ":\n" << carro << "\n";
     }
-    else
+    else if (tipo == "moto")
     {
         Moto moto(placa, modelo, clienteId);
         veiculoDAO.inserir(moto);
         cout << "\nVeiculo cadastrado para " << dono.getNome() << ":\n" << moto << "\n";
+    }
+    else 
+    {
+        Caminhao caminhao(placa, modelo, clienteId);
+        veiculoDAO.inserir(caminhao);
+        cout << "\nVeiculo cadastrado para " << dono.getNome() << ":\n" << caminhao << "\n";
     }
 }
 
@@ -200,8 +206,100 @@ void Menu::cadastrarVaga()
     cout << "\nVaga cadastrada:\n" << vaga << "\n";
 }
 
-void Menu::registrarEntrada() const    { emConstrucao("Registrar entrada"); }
-void Menu::registrarSaida() const      { emConstrucao("Registrar saida"); }
+void Menu::registrarEntrada()
+{
+    string placa;
+
+    cout << "\n--- Registrar entrada ---\n";
+
+    if (!lerTexto("Placa: ", placa))
+    {
+        return;
+    }
+
+    // no banco a placa fica sem traco e maiuscula, igual o setPlaca do Veiculo deixa
+    string placaBusca;
+    for (unsigned int i = 0; i < placa.length(); i++)
+    {
+        if (placa[i] != '-' && placa[i] != ' ')
+        {
+            placaBusca += (char) toupper(placa[i]);
+        }
+    }
+
+    // se a placa nao existir o DAO lanca "Veiculo nao encontrado" e volta pro menu
+    unique_ptr<Veiculo> veiculo = veiculoDAO.buscarPorPlaca(placaBusca);
+
+    if (ticketDAO.temTicketAberto(veiculo->getId()))
+    {
+        Ticket aberto = ticketDAO.buscarAbertoPorVeiculo(veiculo->getId());
+        Vaga vagaAtual = vagaDAO.buscarPorId(aberto.getVagaId());
+
+        cout << "\nO veiculo " << veiculo->getPlaca() << " ja esta no estacionamento, na vaga "
+             << vagaAtual.getNumero() << " (ticket " << aberto.getId() << ").\n";
+        return;
+    }
+
+    // o laco nao sabe se e Carro, Moto ou Caminhao, so pergunta se a vaga aceita
+    vector<Vaga> livres = vagaDAO.listarLivres();
+    int posicao = -1;
+
+    for (unsigned int i = 0; i < livres.size(); i++)
+    {
+        if (livres[i].aceita(*veiculo))
+        {
+            posicao = i;
+            break;
+        }
+    }
+
+    if (posicao == -1)
+    {
+        cout << "\nNao ha vaga livre para " << veiculo->getTipo() << " no momento.\n";
+        return;
+    }
+
+    Vaga& vaga = livres[posicao];
+    Ticket ticket(veiculo->getId(), vaga.getId(), time(NULL));
+
+    // so muda o objeto, por isso fica fora da transacao
+    vaga.ocupar();
+
+    // ticket e vaga gravam juntos ou nenhum dos dois
+    banco.executar("BEGIN;");
+
+    try
+    {
+        ticketDAO.inserir(ticket);
+
+        if (!vagaDAO.atualizar(vaga))
+        {
+            throw runtime_error("Vaga nao encontrada, entrada cancelada.");
+        }
+
+        banco.executar("COMMIT;");
+    }
+    catch (...)
+    {
+        // se o sqlite ja desfez sozinho o ROLLBACK falha, e o erro que importa e o de cima
+        try
+        {
+            banco.executar("ROLLBACK;");
+        }
+        catch (runtime_error&)
+        {
+        }
+        throw;
+    }
+
+    cout << "\nEntrada registrada:\n";
+    cout << "Ticket: " << ticket.getId()
+         << " | Placa: " << veiculo->getPlaca()
+         << " | Vaga: " << vaga.getNumero()
+         << " | Entrada: " << formatarData(ticket.getEntrada()) << "\n";
+}
+
+void Menu::registrarSaida() const     { emConstrucao("Registrar saida"); }
 void Menu::consultarVagas() const      { emConstrucao("Consultar vagas"); }
 void Menu::consultarVeiculos() const   { emConstrucao("Consultar veiculos"); }
 void Menu::consultarTickets() const    { emConstrucao("Consultar tickets"); }
@@ -597,6 +695,16 @@ string Menu::traduzirErro(const string& mensagem) const
 bool Menu::ehErroDeChaveEstrangeira(const runtime_error& erro) const
 {
     return string(erro.what()).find("FOREIGN KEY constraint failed") != string::npos;
+}
+
+// mesmo formato e horario local que o TicketDAO grava no banco
+string Menu::formatarData(time_t data) const
+{
+    char texto[20];
+
+    strftime(texto, sizeof(texto), "%Y-%m-%d %H:%M:%S", localtime(&data));
+
+    return texto;
 }
 
 // repete a pergunta ate vir um inteiro valido dentro de minimo e maximo

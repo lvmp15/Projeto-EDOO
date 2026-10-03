@@ -3,11 +3,13 @@
 
 #include <string>
 #include <stdexcept>
+#include <ctime>
 
 #include "BancoDados.h"
 #include "ClienteDAO.h"
 #include "VeiculoDAO.h"
 #include "VagaDAO.h"
+#include "TicketDAO.h"
 #include "Ticket.h"
 #include "Pagamento.h"
 
@@ -17,9 +19,12 @@ class Menu
 {
 
 private:
+    // guardado so para abrir e fechar transacao, o resto passa pelos DAOs
+    BancoDados& banco;
     ClienteDAO clienteDAO;
     VeiculoDAO veiculoDAO;
     VagaDAO vagaDAO;
+    TicketDAO ticketDAO;
 
     void registrarPagamento(Ticket& ticket);
 
@@ -30,7 +35,7 @@ private:
     void cadastrarCliente();
     void cadastrarVeiculo();
     void cadastrarVaga();
-    void registrarEntrada() const;
+    void registrarEntrada();
     void registrarSaida() const;
     void consultarVagas() const;
     void consultarVeiculos() const;
@@ -51,6 +56,7 @@ private:
     void emConstrucao(const string& nome) const;
     string traduzirErro(const string& mensagem) const;
     bool ehErroDeChaveEstrangeira(const runtime_error& erro) const;
+    string formatarData(time_t data) const;
 
     bool lerInteiro(const string& pergunta, int minimo, int maximo, int& valor) const;
     bool lerTexto(const string& pergunta, string& valor, bool podeVazio = false) const;
