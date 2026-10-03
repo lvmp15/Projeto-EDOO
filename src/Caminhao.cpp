@@ -2,7 +2,7 @@
 
 using namespace std;
 
-// taxa por hora específica de caminhao
+// taxas do Caminhao; o namespace sem nome deixa elas visiveis so neste arquivo
 namespace{
     const double taxaHoraCaminhao = 5.0;
     const double taxaFixa = 15.0;

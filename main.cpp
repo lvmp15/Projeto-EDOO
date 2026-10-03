@@ -7,6 +7,7 @@ int main()
 {
     try
     {
+        // ao sair do try o destrutor fecha a conexao sozinho, ate quando da erro
         BancoDados banco("estacionamento.db");
 
         if (!banco.tabelasExistem())
@@ -16,6 +17,7 @@ int main()
             return 1;
         }
 
+        // o menu so guarda uma referencia pro banco, por isso o banco e criado antes
         Menu menu(banco);
         menu.executar();
     }

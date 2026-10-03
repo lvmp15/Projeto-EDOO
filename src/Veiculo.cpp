@@ -15,9 +15,11 @@ Veiculo::Veiculo(const string& placa, const string& modelo,
     setId(id);
 }
 
+// vazio pq o Veiculo nao aloca nada, ele so existe pra ser virtual
 Veiculo::~Veiculo()
 {}
 
+// dentro da tolerancia paga so a taxa fixa, depois soma a taxa de cada hora a mais
 double Veiculo::calcularComTolerancia(double horas, double taxaFixa, double taxaHora, double tolerancia) const{
     if (horas <= tolerancia){
         return taxaFixa;
@@ -43,6 +45,7 @@ string Veiculo::getPlaca() const
 
 void Veiculo::setPlaca(const string& placa)
 {
+    // tira traco e espaco e deixa maiusculo, entao "abc-1d23" vira "ABC1D23"
     string limpa;
 
     for (unsigned int i = 0; i < placa.length(); i++)
@@ -132,6 +135,7 @@ void Veiculo::exibir(ostream& saida) const
           << " | Cliente: " << clienteId;
 }
 
+// por receber referencia, nao copia o objeto e o exibir() usa o getTipo() da classe certa
 ostream& operator<<(ostream& saida, const Veiculo& veiculo)
 {
     veiculo.exibir(saida);

@@ -16,7 +16,7 @@ class TicketDAO
 {
 
 private:
-    // so usa a conexao, quem abre e fecha e o BancoDados
+    // so usa a conexao, quem abre e fecha e o BancoDados, por isso o DAO nao tem destrutor
     sqlite3* conexao;
 
     sqlite3_stmt* preparar(const string& sql) const;
@@ -32,6 +32,7 @@ private:
 public:
     TicketDAO(BancoDados& banco);
 
+    // referencia sem const pq o id gerado pelo banco e gravado de volta no ticket
     void inserir(Ticket& ticket);
 
     Ticket buscarPorId(int id) const;

@@ -16,7 +16,7 @@ class VeiculoDAO
 {
 
 private:
-    // so usa a conexao, quem abre e fecha e o BancoDados
+    // so usa a conexao, quem abre e fecha e o BancoDados, por isso o DAO nao tem destrutor
     sqlite3* conexao;
 
     sqlite3_stmt* preparar(const string& sql) const;
@@ -27,6 +27,7 @@ private:
 public:
     VeiculoDAO(BancoDados& banco);
 
+    // Veiculo& aceita Carro, Moto ou Caminhao; sem const pq o id gerado volta pro objeto
     void inserir(Veiculo& veiculo);
 
     // Veiculo e abstrato, entao devolve ponteiro pra subclasse certa (Carro, Moto...)

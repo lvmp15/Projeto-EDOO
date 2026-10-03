@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// dona da conexao com o sqlite: abre no construtor e fecha no destrutor
 class BancoDados
 {
 
@@ -21,10 +22,12 @@ public:
     BancoDados(const BancoDados& outro) = delete;
     BancoDados& operator=(const BancoDados& outro) = delete;
 
+    // empresta o ponteiro pros DAOs, mas quem fecha a conexao continua sendo o BancoDados
     sqlite3* getConexao() const;
 
     void executar(const string& sql);
 
+    // confere se as 5 tabelas do schema.sql ja foram criadas
     bool tabelasExistem() const;
 };
 

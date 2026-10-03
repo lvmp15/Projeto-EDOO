@@ -14,6 +14,7 @@ class Cliente {
         // ponto de atenção: o telefone é opcional, se tiver string vazia quer dizer que o cliente nn tem
         string telefone;
 
+        // funcoes de apoio da validacao, ficam privadas pq so a propria classe usa
         string removerCaracteres(const string& texto, const string& remover) const;
         bool todosDigitos(const string& texto) const;
         bool cpfValido(const string& cpf) const;

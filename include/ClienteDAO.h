@@ -15,7 +15,7 @@ class ClienteDAO
 {
 
 private:
-    // so usa a conexao, quem abre e fecha e o BancoDados
+    // so usa a conexao, quem abre e fecha e o BancoDados, por isso o DAO nao tem destrutor
     sqlite3* conexao;
 
     sqlite3_stmt* preparar(const string& sql) const;
@@ -26,6 +26,7 @@ private:
 public:
     ClienteDAO(BancoDados& banco);
 
+    // referencia sem const pq o id gerado pelo banco e gravado de volta no cliente
     void inserir(Cliente& cliente);
 
     Cliente buscarPorId(int id) const;

@@ -7,10 +7,11 @@ using namespace std;
 
 Cliente::Cliente(const string& nome, const string& cpf, const string& telefone, int id)
 {
-    Cliente::setId(id);
-    Cliente::setNome(nome);
-    Cliente::setCpf(cpf);
-    Cliente::setTelefone(telefone);
+    // usa os setters para aproveitar as validacoes, igual no Veiculo e na Vaga
+    setId(id);
+    setNome(nome);
+    setCpf(cpf);
+    setTelefone(telefone);
 }
 
 int Cliente::getId() const
@@ -53,12 +54,12 @@ void Cliente::setCpf(const string& cpf)
 
 string Cliente::getTelefone() const
 {
-
     return telefone;
 }
 
 void Cliente::setTelefone(const string& telefone)
 {
+    // telefone e opcional, entao vazio e aceito sem passar pela validacao
     if (telefone.empty()) {
         this->telefone = "";
         return;
@@ -73,9 +74,7 @@ void Cliente::setTelefone(const string& telefone)
 
 bool Cliente::temTelefone() const
 {
-    bool semTelefone;
-    semTelefone = !telefone.empty();
-    return semTelefone;
+    return !telefone.empty();
 }
 
 
