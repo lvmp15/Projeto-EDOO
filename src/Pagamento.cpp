@@ -12,6 +12,10 @@ Pagamento::Pagamento(Ticket* ticket, const string& metodo, int id)
         valor = ticket->getValor();
      }
 
+Pagamento::Pagamento(Ticket* ticket, double valor, time_t data,
+                     const string& metodo, const string& status, int id)
+    : id(id), ticket(ticket), valor(valor), data(data), metodo(metodo), status(status) {}
+
 void Pagamento::confirmar() {
     if (status == "confirmado") return;   // caso tenha sido confirmado nada acontece 
     data = time(nullptr);
@@ -20,8 +24,6 @@ void Pagamento::confirmar() {
 
 int Pagamento::getId() const { return id; }
 void Pagamento::setId(int id) { this->id = id; }
-
-
 
 Ticket* Pagamento::getTicket() const { return ticket; }
 double Pagamento::getValor() const { return valor; }
