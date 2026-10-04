@@ -7,11 +7,13 @@ SRCS = main.cpp $(wildcard src/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(OBJS:.o=.d)
 
-# No Windows o executavel precisa do .exe
+# No Windows o executavel precisa do .exe, e o servidor web (httplib) usa a biblioteca de rede ws2_32
 ifeq ($(OS),Windows_NT)
     EXE = estacionamento.exe
+    LDLIBS += -lws2_32
 else
     EXE = estacionamento
+    LDLIBS += -lpthread
 endif
 
 # O make escolhe sozinho entre o cmd do Windows e o sh, e o comando de apagar muda.
