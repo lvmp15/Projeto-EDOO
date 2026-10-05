@@ -1,15 +1,15 @@
-# Sistema de Estacionamento
+# Sistema de Administração e Controle de Estacionamento
 
-Projeto da disciplina de EDOO (CIN0135), CIn/UFPE.
+Projeto da disciplina de Estruturas de Dados Orientadas a Objetos (CIN0135), do Centro de Informática da UFPE.
 
 Programa de terminal em C++ que controla um estacionamento. Ele cadastra clientes, veículos (carro, moto ou caminhão) e vagas, registra a entrada do veículo numa vaga livre do mesmo tipo e, na saída, calcula a tarifa e registra o pagamento. Os dados ficam num banco SQLite (`estacionamento.db`).
 
-## Integrantes
+## Integrantes / Login
 
-- [nome 1]
-- [nome 2]
-- [nome 3]
-- [nome 4]
+- Arthur Guerra Laranjeira Salazar / agls
+- João Pedro Monteiro da Cunha Santos / jpmcs
+- Lucas Veloso Moura Pereira / lvmp
+- Matheus de Assis Lins / mal5
 
 ## Requisitos
 
@@ -165,7 +165,7 @@ A tarifa depende do tipo do veículo. Até 1 hora paga só a taxa fixa; depois d
 - Moto: R$ 5,00 + R$ 1,50 por hora a mais
 - Caminhão: R$ 15,00 + R$ 5,00 por hora a mais
 
-## Interface web (opcional)
+## Interface web
 
 Além do menu, o programa tem uma interface no navegador, feita em React (pasta `frontend/`). Ela mostra o pátio com as vagas e permite cadastrar cliente, veículo e vaga, remover vaga, colocar um veículo numa vaga e registrar a saída com pagamento. Usa o mesmo `estacionamento.db`.
 
