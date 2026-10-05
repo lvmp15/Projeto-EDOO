@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de Estacionamento - EDOO</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0 20px;
+        background: #ffffff;
+        color: #222222;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+    main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 32px 0 48px;
+    }
+
+    h1 {
+        font-size: 30px;
+        line-height: 1.25;
+        margin: 0 0 8px;
+    }
+
+    h2 {
+        font-size: 23px;
+        margin: 44px 0 12px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #cccccc;
+    }
+
+    h3 {
+        font-size: 19px;
+        margin: 28px 0 8px;
+    }
+
+    a {
+        color: #1a5fb4;
+    }
+
+    code {
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 15px;
+        background: #f2f2f2;
+        padding: 1px 4px;
+    }
+
+    pre {
+        background: #f2f2f2;
+        border-left: 3px solid #999999;
+        padding: 12px 14px;
+        overflow-x: auto;
+        line-height: 1.45;
+    }
+
+    pre code {
+        padding: 0;
+        font-size: 14px;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #cccccc;
+    }
+
+    figure {
+        margin: 20px 0;
+    }
+
+    figcaption {
+        font-size: 15px;
+        color: #555555;
+    }
+
+    .subtitulo {
+        margin: 0;
+        color: #555555;
+    }
+
+    .arquivo {
+        font-size: 15px;
+        color: #555555;
+        margin-bottom: 4px;
+    }
+
+    footer {
+        margin-top: 48px;
+        padding-top: 12px;
+        border-top: 1px solid #cccccc;
+        font-size: 15px;
+        color: #555555;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 0 14px;
+            font-size: 16px;
+        }
+
+        main {
+            padding-top: 20px;
+        }
+
+        h1 {
+            font-size: 25px;
+        }
+
+        h2 {
+            font-size: 21px;
+        }
+
+        pre code {
+            font-size: 13px;
+        }
+    }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+    <h1>Sistema de Administração e Controle de Estacionamento</h1>
+    <p class="subtitulo">CIN0135 - Estruturas de Dados Orientadas a Objetos - Centro de Informática, UFPE</p>
+</header>
+
+<h2>Integrantes</h2>
+<ul>
+    <li>[nome 1]</li>
+    <li>[nome 2]</li>
+    <li>[nome 3]</li>
+    <li>[nome 4]</li>
+</ul>
+
+<h2>Links</h2>
+<ul>
+    <li>Código: <a href="https://github.com/lvmp15/Projeto-EDOO">github.com/lvmp15/Projeto-EDOO</a></li>
+    <!-- trocar [link do video] pelo link do YouTube, no href e no texto -->
+    <li>Vídeo de apresentação: <a href="[link do video]">[link do video]</a></li>
+</ul>
+
+<h2>O que o sistema faz</h2>
+<p>
+    É um programa em C++ que controla um estacionamento. Ele cadastra clientes, veículos (carro, moto ou caminhão) e vagas.
+    Quando um veículo chega, o sistema procura uma vaga livre do mesmo tipo e abre um ticket.
+    Na saída, calcula a tarifa pelo tipo do veículo e pelo tempo de permanência, registra o pagamento e libera a vaga.
+    Tudo fica salvo num banco SQLite. O sistema pode ser usado por um menu no terminal ou por uma interface no navegador.
+</p>
+
+<h2>Funcionalidades</h2>
+<ul>
+    <li>Cadastrar, alterar, consultar e excluir clientes, veículos e vagas.</li>
+    <li>Registrar a entrada pela placa, com a vaga escolhida automaticamente pelo tipo do veículo.</li>
+    <li>Registrar a saída, com cálculo da tarifa e pagamento em dinheiro, cartão ou Pix.</li>
+    <li>Consultar vagas (todas, livres ou ocupadas), tickets abertos e pagamentos, com o total arrecadado.</li>
+    <li>Validar CPF, telefone e placa (formato antigo e Mercosul) antes de gravar.</li>
+    <li>Gravar entrada e saída numa transação: ticket, vaga e pagamento são salvos juntos ou nada é salvo.</li>
+</ul>
+
+<p>A tarifa tem uma taxa fixa que cobre a primeira hora. Depois disso soma a taxa por hora, proporcional ao tempo:</p>
+<ul>
+    <li>Carro: R$ 10,00 + R$ 2,50 por hora a mais</li>
+    <li>Moto: R$ 5,00 + R$ 1,50 por hora a mais</li>
+    <li>Caminhão: R$ 15,00 + R$ 5,00 por hora a mais</li>
+</ul>
+
+<h2>Conceitos de orientação a objetos</h2>
+<p>Esta seção mostra cada conceito e onde ele está no código. Os trechos foram copiados do projeto.</p>
+
+<h3>Herança e classe abstrata</h3>
+<p>
+    <code>Veiculo</code> é a classe base de <code>Carro</code>, <code>Moto</code> e <code>Caminhao</code>.
+    Ela guarda o que todo veículo tem (id, placa, modelo e dono) e declara dois métodos virtuais puros:
+    <code>calcularTarifa</code> e <code>getTipo</code>. Por causa do <code>=&nbsp;0</code>, <code>Veiculo</code> é abstrata
+    e não dá para criar um objeto dela direto.
+</p>
+<p class="arquivo">include/Veiculo.h</p>
+<pre><code>// o "= 0" obriga cada filha a ter a sua versao, e e isso que deixa Veiculo abstrata
+virtual double calcularTarifa(double horas) const = 0;
+virtual string getTipo() const = 0;</code></pre>
+<p>
+    Cada filha implementa os dois métodos com <code>override</code>. A conta da tarifa é igual para os três tipos e
+    só muda a taxa, então ela fica num método <code>protected</code> da base, <code>calcularComTolerancia</code>, que só
+    as filhas podem chamar:
+</p>
+<p class="arquivo">src/Carro.cpp</p>
+<pre><code>double Carro::calcularTarifa(double horas) const{
+    return calcularComTolerancia(horas, taxaFixa, taxaHoraCarro);
+}</code></pre>
+
+<h3>Polimorfismo</h3>
+<p>O polimorfismo aparece em dois lugares diferentes.</p>
+
+<p>
+    <strong>1. Cálculo da tarifa.</strong> <code>Ticket::registrarSaida</code> recebe um <code>const Veiculo&amp;</code>
+    e chama <code>calcularTarifa</code>. O ticket não sabe se é carro, moto ou caminhão. Como o método é virtual,
+    em tempo de execução é chamada a versão da classe certa.
+</p>
+<p class="arquivo">src/Ticket.cpp</p>
+<pre><code>void Ticket::registrarSaida(time_t saida, const Veiculo&amp; veiculo) {
+    ...
+    this-&gt;saida = saida;
+    double horas = difftime(saida, entrada) / 3600.0;
+    valor = veiculo.calcularTarifa(horas);
+}</code></pre>
+
+<p>
+    <strong>2. Busca de vaga livre.</strong> Em <code>Menu::registrarEntrada</code>, o veículo vem do banco como
+    <code>unique_ptr&lt;Veiculo&gt;</code>. O laço percorre as vagas livres e pergunta a cada uma se ela aceita o veículo,
+    sem saber o tipo dele:
+</p>
+<p class="arquivo">src/Menu.cpp</p>
+<pre><code>// o laco nao sabe se e Carro, Moto ou Caminhao, so pergunta se a vaga aceita
+for (unsigned int i = 0; i &lt; livres.size(); i++)
+{
+    if (livres[i].aceita(*veiculo))</code></pre>
+<p>
+    Dentro de <code>Vaga::aceita</code>, a chamada <code>veiculo.getTipo()</code> é virtual e devolve "Carro", "Moto" ou
+    "Caminhao" conforme o objeto real. A interface web usa o mesmo <code>aceita</code> em
+    <code>ServidorWeb::alocarVeiculo</code>.
+</p>
+<p class="arquivo">src/Vaga.cpp</p>
+<pre><code>bool Vaga::aceita(const Veiculo&amp; veiculo) const
+{
+    return tipo == veiculo.getTipo();
+}</code></pre>
+<p>
+    O <code>operator&lt;&lt;</code> de <code>Veiculo</code> também é polimórfico: ele chama o <code>exibir</code> virtual,
+    que usa o <code>getTipo()</code> da classe filha.
+</p>
+
+<h3>Encapsulamento</h3>
+<p>
+    Os atributos de todas as classes de domínio são <code>private</code>. A única forma de mudar um valor é pelos setters,
+    e os setters validam antes de gravar. Os construtores também chamam os setters, então um objeto com placa, CPF ou tipo
+    de vaga inválido nem chega a ser criado: o setter lança <code>invalid_argument</code> antes.
+</p>
+<ul>
+    <li><code>Veiculo::setPlaca</code> tira traço e espaço, deixa em maiúsculo e só aceita os formatos ABC1234 e ABC1D23 (conferidos pelo método privado <code>formatoValido</code>).</li>
+    <li><code>Cliente::setCpf</code> tira ponto, hífen e espaço e só aceita 11 dígitos.</li>
+    <li><code>Vaga::setTipo</code> normaliza a escrita ("CARRO" vira "Carro") e só aceita Carro, Moto ou Caminhao.</li>
+    <li><code>Vaga</code> não tem setter para <code>ocupada</code>. O estado só muda por <code>ocupar()</code> e <code>liberar()</code>, que lançam erro se a vaga já estiver ocupada ou já estiver livre.</li>
+</ul>
+<p class="arquivo">src/Veiculo.cpp</p>
+<pre><code>if (!formatoValido(limpa))
+{
+    throw invalid_argument("Placa invalida: " + placa);
+}
+
+this-&gt;placa = limpa;</code></pre>
+
+<h3>Ponteiros e referências</h3>
+<p>
+    Como <code>Veiculo</code> é abstrata, o <code>VeiculoDAO</code> não consegue devolver um <code>Veiculo</code> por valor.
+    Ele lê a coluna <code>tipo</code> do banco, cria o objeto da classe certa com <code>new</code> e devolve um
+    <code>unique_ptr&lt;Veiculo&gt;</code>. O <code>unique_ptr</code> é dono do objeto e chama o <code>delete</code> sozinho.
+</p>
+<p class="arquivo">src/VeiculoDAO.cpp, método montarVeiculo</p>
+<pre><code>if (tipo == "Carro")
+{
+    return unique_ptr&lt;Veiculo&gt;(new Carro(placa, modelo, clienteId, id));
+}</code></pre>
+<p>
+    Esse <code>delete</code> é feito pelo ponteiro da classe base. Por isso o destrutor de <code>Veiculo</code> é virtual:
+    sem isso, apagar um <code>Carro</code> por um ponteiro de <code>Veiculo</code> não chamaria o destrutor certo.
+</p>
+<p class="arquivo">include/Veiculo.h</p>
+<pre><code>// virtual pq o unique_ptr&lt;Veiculo&gt; do DAO apaga Carro, Moto e Caminhao pelo ponteiro da base
+virtual ~Veiculo();</code></pre>
+<p>Outros usos no projeto:</p>
+<ul>
+    <li><code>Pagamento</code> guarda um <code>Ticket*</code>. É um ponteiro sem posse: o pagamento só aponta para o ticket e não faz <code>delete</code>.</li>
+    <li>O <code>Menu</code> e os cinco DAOs recebem o <code>BancoDados</code> por referência (<code>BancoDados&amp;</code>), então todos usam a mesma conexão sem copiar nada.</li>
+    <li>Em <code>Menu::registrarEntrada</code>, <code>Vaga&amp; vaga = livres[posicao]</code> faz o <code>ocupar()</code> mudar a vaga do próprio vetor, sem cópia.</li>
+</ul>
+
+<h3>RAII no BancoDados</h3>
+<p>
+    A classe <code>BancoDados</code> é dona da conexão com o SQLite. O construtor abre a conexão e o destrutor fecha.
+    No <code>main</code>, o objeto é criado dentro de um <code>try</code>. Quando o programa sai do bloco, mesmo por
+    causa de uma exceção, o destrutor roda e a conexão é fechada.
+</p>
+<p>
+    A cópia é proibida com <code>=&nbsp;delete</code>. Se fosse permitida, duas cópias teriam o mesmo ponteiro e a conexão
+    seria fechada duas vezes.
+</p>
+<p class="arquivo">include/BancoDados.h</p>
+<pre><code>BancoDados(const string&amp; caminho = "estacionamento.db");
+~BancoDados();
+
+BancoDados(const BancoDados&amp; outro) = delete;
+BancoDados&amp; operator=(const BancoDados&amp; outro) = delete;</code></pre>
+
+<h3>Tratamento de exceções</h3>
+<p>
+    As classes de domínio lançam <code>invalid_argument</code> com uma mensagem legível (por exemplo, "CPF invalido").
+    Os DAOs lançam <code>runtime_error</code> quando o banco falha. O <code>Menu::executarOpcao</code> captura as duas:
+    a operação atual é cancelada, a mensagem aparece na tela e o programa volta para o menu sem fechar.
+</p>
+
+<h2>Arquitetura</h2>
+<p>O código é dividido em três camadas, e o banco fica no fim delas.</p>
+
+<h3>Classes de domínio</h3>
+<ul>
+    <li><code>Veiculo</code> (abstrata), com as filhas <code>Carro</code>, <code>Moto</code> e <code>Caminhao</code>.</li>
+    <li><code>Cliente</code>: dono dos veículos.</li>
+    <li><code>Vaga</code>: número, tipo e se está ocupada.</li>
+    <li><code>Ticket</code>: entrada e saída de um veículo numa vaga, e o valor cobrado.</li>
+    <li><code>Pagamento</code>: valor, data e método de pagamento de um ticket fechado.</li>
+</ul>
+<p>Essas classes guardam os dados e fazem as validações. Nenhuma delas sabe que existe banco de dados.</p>
+
+<h3>Camada DAO</h3>
+<p>
+    São cinco classes, uma por tabela: <code>ClienteDAO</code>, <code>VeiculoDAO</code>, <code>VagaDAO</code>,
+    <code>TicketDAO</code> e <code>PagamentoDAO</code>. Cada uma tem os métodos de inserir, buscar, listar,
+    atualizar e remover. Todo SQL que lê ou grava nas tabelas fica nelas.
+</p>
+
+<h3>BancoDados</h3>
+<p>
+    Abre e fecha a conexão, liga as chaves estrangeiras (<code>PRAGMA foreign_keys = ON</code>) e confere se as
+    tabelas existem antes do programa começar. Os DAOs só pegam a conexão emprestada.
+</p>
+
+<h3>Quem usa as camadas</h3>
+<p>
+    O <code>Menu</code> (terminal) e o <code>ServidorWeb</code> (navegador) conversam com os DAOs. O único SQL que eles
+    mandam direto é o de transação (<code>BEGIN</code>, <code>COMMIT</code> e <code>ROLLBACK</code>), pelo
+    <code>BancoDados</code>.
+</p>
+
+<h3>Banco SQLite</h3>
+<p>As tabelas são criadas pelo <code>sql/schema.sql</code>:</p>
+<ul>
+    <li><code>cliente</code>: nome, CPF (único) e telefone opcional.</li>
+    <li><code>veiculo</code>: placa (única), modelo, tipo e o cliente dono.</li>
+    <li><code>vaga</code>: número (único), tipo e se está ocupada (0 ou 1).</li>
+    <li><code>ticket</code>: veículo, vaga, entrada, saída e valor. Saída nula quer dizer que o veículo ainda está no estacionamento.</li>
+    <li><code>pagamento</code>: ticket, valor, data, método e status. Cada ticket tem no máximo um pagamento.</li>
+</ul>
+<p>
+    As chaves estrangeiras impedem, por exemplo, excluir um cliente que ainda tem veículo, ou um veículo que já tem ticket.
+    Os <code>CHECK</code> do banco repetem as regras das classes (tipos válidos, saída depois da entrada, valor não negativo).
+</p>
+
+<h3>Diagrama de classes</h3>
+<!-- colocar o arquivo diagrama.png dentro da pasta docs -->
+<figure>
+    <img src="diagrama.png" alt="Diagrama de classes: Veiculo abstrata com as filhas Carro, Moto e Caminhao; Cliente, Vaga, Ticket e Pagamento; os cinco DAOs e o BancoDados">
+    <figcaption>Diagrama de classes do sistema.</figcaption>
+</figure>
+
+<h2>Bônus</h2>
+
+<h3>Interface web em React</h3>
+<p>
+    Além do menu no terminal, o programa tem uma interface no navegador, na pasta <code>frontend/</code>.
+    Ela é aberta com <code>estacionamento web</code>. O lado C++ é a classe <code>ServidorWeb</code>, que usa a biblioteca
+    cpp-httplib e responde em <code>localhost:8080</code>. Ela usa os mesmos DAOs e as mesmas classes de domínio do menu,
+    então as validações e o cálculo da tarifa são os mesmos.
+</p>
+<p>
+    A tela mostra o pátio com as vagas. Dá para cadastrar cliente, veículo e vaga, remover uma vaga livre, escolher o
+    veículo de cada vaga e registrar a saída com o pagamento. Enquanto o veículo está estacionado, a vaga mostra a
+    permanência e o valor até aquele momento.
+</p>
+
+<h3>Padrão DAO</h3>
+<p>
+    Separar o acesso ao banco nos DAOs deixa as classes de domínio sem nenhum SQL. Isso permitiu fazer a interface web
+    sem reescrever nada de banco: o <code>ServidorWeb</code> usa os mesmos cinco DAOs que o <code>Menu</code>.
+</p>
+
+<h2>Prints do sistema</h2>
+
+<!-- colocar o arquivo print-menu.png dentro da pasta docs -->
+<figure>
+    <img src="print-menu.png" alt="Menu principal no terminal, com as onze opções do sistema">
+    <figcaption>Menu principal no terminal.</figcaption>
+</figure>
+
+<!-- colocar o arquivo print-saida.png dentro da pasta docs -->
+<figure>
+    <img src="print-saida.png" alt="Registro de saída no terminal, mostrando a permanência, o valor a pagar e o pagamento confirmado">
+    <figcaption>Saída de um veículo, com o cálculo da tarifa e o pagamento.</figcaption>
+</figure>
+
+<!-- colocar o arquivo print-web.png dentro da pasta docs -->
+<figure>
+    <img src="print-web.png" alt="Interface web mostrando o pátio com as vagas livres e ocupadas">
+    <figcaption>Interface web com o pátio do estacionamento.</figcaption>
+</figure>
+
+<footer>
+    Projeto da disciplina CIN0135 - Estruturas de Dados Orientadas a Objetos, CIn/UFPE.
+</footer>
+
+</main>
+</body>
+</html>
