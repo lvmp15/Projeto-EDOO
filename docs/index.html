@@ -351,15 +351,13 @@ BancoDados&amp; operator=(const BancoDados&amp; outro) = delete;</code></pre>
 </p>
 
 <h3>Diagrama de classes</h3>
-<!-- colocar o arquivo diagrama.png dentro da pasta docs -->
+
 <figure>
     <img src="diagrama.png" alt="Diagrama de classes: Veiculo abstrata com as filhas Carro, Moto e Caminhao; Cliente, Vaga, Ticket e Pagamento; os cinco DAOs e o BancoDados">
     <figcaption>Diagrama de classes do sistema.</figcaption>
 </figure>
 
-<h2>Bônus</h2>
-
-<h3>Interface web em React</h3>
+<h2>Interface web</h2>
 <p>
     Além do menu no terminal, o programa tem uma interface no navegador, na pasta <code>frontend/</code>.
     Ela é aberta com <code>estacionamento web</code>. O lado C++ é a classe <code>ServidorWeb</code>, que usa a biblioteca
@@ -372,14 +370,8 @@ BancoDados&amp; operator=(const BancoDados&amp; outro) = delete;</code></pre>
     permanência e o valor até aquele momento.
 </p>
 
-<h3>Padrão DAO</h3>
-<p>
-    Separar o acesso ao banco nos DAOs deixa as classes de domínio sem nenhum SQL. Isso permitiu fazer a interface web
-    sem reescrever nada de banco: o <code>ServidorWeb</code> usa os mesmos cinco DAOs que o <code>Menu</code>.
-</p>
-
 <footer>
-    Projeto da disciplina CIN0135 - Estruturas de Dados Orientadas a Objetos, CIn/UFPE.
+    Projeto da disciplina - Estruturas de Dados Orientadas a Objetos, CIn-UFPE.
 </footer>
 
 </main>
